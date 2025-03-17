@@ -70,22 +70,6 @@ from nnunetv2.utilities.plans_handling.plans_handler import PlansManager
 class nnUNetTrainer(object):
     def __init__(self, plans: dict, configuration: str, fold: int, dataset_json: dict,
                  device: torch.device = torch.device('cuda')):
-        # From https://grugbrain.dev/. Worth a read ya big brains ;-)
-
-        # apex predator of grug is complexity
-        # complexity bad
-        # say again:
-        # complexity very bad
-        # you say now:
-        # complexity very, very bad
-        # given choice between complexity or one on one against t-rex, grug take t-rex: at least grug see t-rex
-        # complexity is spirit demon that enter codebase through well-meaning but ultimately very clubbable non grug-brain developers and project managers who not fear complexity spirit demon or even know about sometime
-        # one day code base understandable and grug can get work done, everything good!
-        # next day impossible: complexity demon spirit has entered code and very dangerous situation!
-
-        # OK OK I am guilty. But I tried.
-        # https://www.osnews.com/images/comics/wtfm.jpg
-        # https://i.pinimg.com/originals/26/b2/50/26b250a738ea4abc7a5af4d42ad93af0.jpg
 
         self.is_ddp = dist.is_available() and dist.is_initialized()
         self.local_rank = 0 if not self.is_ddp else dist.get_rank()
@@ -148,7 +132,7 @@ class nnUNetTrainer(object):
         self.probabilistic_oversampling = False
         self.num_iterations_per_epoch = 250
         self.num_val_iterations_per_epoch = 50
-        self.num_epochs = 1000
+        self.num_epochs = 2
         self.current_epoch = 0
         self.enable_deep_supervision = True
 
