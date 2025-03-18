@@ -13,7 +13,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 #! Panoptic Dice #
 ##################
 #? The TP, FP and FN values are also used for calculating the detection rate. 
-def panoptic_dice(mask_ref: np.ndarray, mask_pred: np.ndarray, ignore_mask: np.ndarray = None):
+def panoptic_dice(mask_ref: np.ndarray, mask_pred: np.ndarray):
 
     mask_pred_tensor = torch.tensor(mask_pred, dtype=torch.long).to(device)
     mask_ref_tensor = torch.tensor(mask_ref, dtype=torch.long).to(device)

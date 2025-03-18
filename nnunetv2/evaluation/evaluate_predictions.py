@@ -110,7 +110,7 @@ def compute_metrics(reference_file: str, prediction_file: str, image_reader_writ
         tp, fp, fn, tn = compute_tp_fp_fn_tn(mask_ref, mask_pred, ignore_mask)
 
         #? Getting the instance metrics
-        pq_score, insta_tp, insta_fp, insta_fn = panoptic_dice(mask_ref, mask_pred, ignore_mask)
+        pq_score, insta_tp, insta_fp, insta_fn = panoptic_dice(mask_ref, mask_pred)
 
         #? tally the metrics
         if tp + fp + fn == 0:
