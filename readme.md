@@ -37,9 +37,23 @@
 * Check in `nnUNet/nnunetv2/training/logging/nnunet_logger.py`
     * Specifically: `plot_progress_png` function
 
+### C. Every Epoch Train logs
+Currently done a bit weirdly cos the import is from a loss folder. I found it a bit easier to understand by the below:
+
+* I. 
+    * Create a file to define your metrics here: `/home/localssk23/nnUNet/nnunetv2/training/logging`
+    * Example file: `/home/localssk23/nnUNet/nnunetv2/training/logging/insta_logging.py`
+
+* II. 
+    * Make multiple changes in: `nnUNet/nnunetv2/training/nnUNetTrainer/nnUNetTrainer.py` \
+    --> Follow #!%%1, #!%%2 etc. comment style in the file. There are 5 steps.
+
+
 # 4 Checkpointing
 
 ## Extra:
 **<ins>GradScaler**</ins>: `https://github.com/MIC-DKFZ/nnUNet/issues/2742`
 
 **<ins>debug.json**</ins>: Even if I use a custom loss, why does the debug show Dice + CE?
+
+**<ins>mask consideration in logging metrics**</ins>: I do not do that now, check the args difference between `get_tp_fp_fn_tn` and `panoptic_scores`

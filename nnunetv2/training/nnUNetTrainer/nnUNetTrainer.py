@@ -11,6 +11,7 @@ from typing import Tuple, Union, List
 
 import numpy as np
 import torch
+
 from batchgenerators.dataloading.multi_threaded_augmenter import MultiThreadedAugmenter
 from batchgenerators.dataloading.nondet_multi_threaded_augmenter import NonDetMultiThreadedAugmenter
 from batchgenerators.dataloading.single_threaded_augmenter import SingleThreadedAugmenter
@@ -36,6 +37,7 @@ from batchgeneratorsv2.transforms.utils.pseudo2d import Convert3DTo2DTransform, 
 from batchgeneratorsv2.transforms.utils.random import RandomTransform
 from batchgeneratorsv2.transforms.utils.remove_label import RemoveLabelTansform
 from batchgeneratorsv2.transforms.utils.seg_to_regions import ConvertSegmentationToRegionsTransform
+
 from torch import autocast, nn
 from torch import distributed as dist
 from torch._dynamo import OptimizedModule
@@ -56,6 +58,7 @@ from nnunetv2.training.logging.nnunet_logger import nnUNetLogger
 from nnunetv2.training.loss.compound_losses import DC_and_CE_loss, DC_and_BCE_loss
 from nnunetv2.training.loss.deep_supervision import DeepSupervisionWrapper
 from nnunetv2.training.loss.dice import get_tp_fp_fn_tn, MemoryEfficientSoftDiceLoss
+from nnunetv2.training.logging.insta_logging import panoptic_scores
 from nnunetv2.training.lr_scheduler.polylr import PolyLRScheduler
 from nnunetv2.utilities.collate_outputs import collate_outputs
 from nnunetv2.utilities.crossval_split import generate_crossval_split
@@ -1070,6 +1073,7 @@ class nnUNetTrainer(object):
             mask = None
 
         tp, fp, fn, _ = get_tp_fp_fn_tn(predicted_segmentation_onehot, target, axes=axes, mask=mask)
+        pq, insta_tp, insta_fp, insta_fn = panoptic_scores(predicted_segmentation_onehot, target) #!%%1
 
         tp_hard = tp.detach().cpu().numpy()
         fp_hard = fp.detach().cpu().numpy()
@@ -1083,7 +1087,9 @@ class nnUNetTrainer(object):
             fp_hard = fp_hard[1:]
             fn_hard = fn_hard[1:]
 
-        return {'loss': l.detach().cpu().numpy(), 'tp_hard': tp_hard, 'fp_hard': fp_hard, 'fn_hard': fn_hard}
+        # return {'loss': l.detach().cpu().numpy(), 'tp_hard': tp_hard, 'fp_hard': fp_hard, 'fn_hard': fn_hard}
+        return {'loss': l.detach().cpu().numpy(), 'tp_hard': tp_hard, 'fp_hard': fp_hard, 'fn_hard': fn_hard, 
+                'PQ_DSC': pq, 'insta_TP': insta_tp, 'insta_FP': insta_fp, 'insta_FN': insta_fn} #!%%2
 
     def on_validation_epoch_end(self, val_outputs: List[dict]):
         outputs_collated = collate_outputs(val_outputs)
@@ -1112,11 +1118,24 @@ class nnUNetTrainer(object):
         else:
             loss_here = np.mean(outputs_collated['loss'])
 
+            #!%%3 (I am not doing ddp at the moment, so just considering here. Need to add that later.)
+            #? insta logging
+            pq = np.mean(outputs_collated['PQ_DSC'])
+            insta_tp = np.mean(outputs_collated['insta_TP'], 0)
+            insta_fp = np.mean(outputs_collated['insta_FP'], 0)
+            insta_fn = np.mean(outputs_collated['insta_FN'], 0)
+
         global_dc_per_class = [i for i in [2 * i / (2 * i + j + k) for i, j, k in zip(tp, fp, fn)]]
         mean_fg_dice = np.nanmean(global_dc_per_class)
         self.logger.log('mean_fg_dice', mean_fg_dice, self.current_epoch)
         self.logger.log('dice_per_class_or_region', global_dc_per_class, self.current_epoch)
         self.logger.log('val_losses', loss_here, self.current_epoch)
+
+        #!%%4
+        self.logger.log('PQ_DSC', pq, self.current_epoch)
+        self.logger.log('insta_TP', insta_tp, self.current_epoch)
+        self.logger.log('insta_FP', insta_fp, self.current_epoch)
+        self.logger.log('insta_FN', insta_fn, self.current_epoch)
 
     def on_epoch_start(self):
         self.logger.log('epoch_start_timestamps', time(), self.current_epoch)
@@ -1130,6 +1149,12 @@ class nnUNetTrainer(object):
                                                self.logger.my_fantastic_logging['dice_per_class_or_region'][-1]])
         self.print_to_log_file(
             f"Epoch time: {np.round(self.logger.my_fantastic_logging['epoch_end_timestamps'][-1] - self.logger.my_fantastic_logging['epoch_start_timestamps'][-1], decimals=2)} s")
+        
+        #!%%5
+        self.print_to_log_file('PQ_DSC', np.round(self.logger.my_fantastic_logging['PQ_DSC'][-1], decimals=4))
+        self.print_to_log_file('insta_TP', np.round(self.logger.my_fantastic_logging['insta_TP'][-1], decimals=1))
+        self.print_to_log_file('insta_FP', np.round(self.logger.my_fantastic_logging['insta_FP'][-1], decimals=1))
+        self.print_to_log_file('insta_FN', np.round(self.logger.my_fantastic_logging['insta_FN'][-1], decimals=1))
 
         # handling periodic checkpointing
         current_epoch = self.current_epoch
