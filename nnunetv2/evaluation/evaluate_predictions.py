@@ -16,6 +16,8 @@ from nnunetv2.imageio.simpleitk_reader_writer import SimpleITKIO
 from nnunetv2.utilities.json_export import recursive_fix_for_json_export
 from nnunetv2.utilities.plans_handling.plans_handler import PlansManager
 
+from nnunetv2.evaluation.insta_metrics import panoptic_dice
+
 
 def label_or_region_to_key(label_or_region: Union[int, Tuple[int]]):
     return str(label_or_region)
@@ -100,10 +102,17 @@ def compute_metrics(reference_file: str, prediction_file: str, image_reader_writ
     results['prediction_file'] = prediction_file
     results['metrics'] = {}
     for r in labels_or_regions:
+
+        #? Getting the metrics
         results['metrics'][r] = {}
         mask_ref = region_or_label_to_mask(seg_ref, r)
         mask_pred = region_or_label_to_mask(seg_pred, r)
         tp, fp, fn, tn = compute_tp_fp_fn_tn(mask_ref, mask_pred, ignore_mask)
+
+        #? Getting the instance metrics
+        pq_score, insta_tp, insta_fp, insta_fn = panoptic_dice(mask_ref, mask_pred, ignore_mask)
+
+        #? tally the metrics
         if tp + fp + fn == 0:
             results['metrics'][r]['Dice'] = np.nan
             results['metrics'][r]['IoU'] = np.nan
@@ -116,6 +125,12 @@ def compute_metrics(reference_file: str, prediction_file: str, image_reader_writ
         results['metrics'][r]['TN'] = tn
         results['metrics'][r]['n_pred'] = fp + tp
         results['metrics'][r]['n_ref'] = fn + tp
+
+        #? tally the instance metrics
+        results['metrics'][r]['PQ'] = pq_score
+        results['metrics'][r]['insta_FP'] = insta_fp
+        results['metrics'][r]['insta_TP'] = insta_tp
+        results['metrics'][r]['insta_FN'] = insta_fn
     return results
 
 

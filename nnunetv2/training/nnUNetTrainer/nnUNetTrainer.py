@@ -1342,6 +1342,9 @@ class nnUNetTrainer(object):
         if self.is_ddp:
             dist.barrier()
 
+        #?#################################
+        # This is from the evaluate preds #
+        #?#################################
         if self.local_rank == 0:
             metrics = compute_metrics_on_folder(join(self.preprocessed_dataset_folder_base, 'gt_segmentations'),
                                                 validation_output_folder,
@@ -1355,6 +1358,8 @@ class nnUNetTrainer(object):
                                                 self.is_ddp else default_num_processes)
             self.print_to_log_file("Validation complete", also_print_to_console=True)
             self.print_to_log_file("Mean Validation Dice: ", (metrics['foreground_mean']["Dice"]),
+                                   also_print_to_console=True)
+            self.print_to_log_file("Mean Validation PQ: ", (metrics['foreground_mean']["PQ"]),
                                    also_print_to_console=True)
 
         self.set_deep_supervision_enabled(True)
