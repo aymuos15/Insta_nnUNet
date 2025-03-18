@@ -46,7 +46,7 @@ Currently done a bit weirdly cos the import is from a loss folder. I found it a 
 
 * II. 
     * Make multiple changes in: `nnUNet/nnunetv2/training/nnUNetTrainer/nnUNetTrainer.py` \
-    --> Follow #!%%1, #!%%2 etc. comment style in the file. There are 5 steps.
+    --> Follow #!%%1, #!%%2 etc. comment style in the file. There are 6 steps.
 
 
 # 4 Checkpointing

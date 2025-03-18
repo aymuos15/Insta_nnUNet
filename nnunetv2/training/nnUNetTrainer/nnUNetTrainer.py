@@ -1165,6 +1165,7 @@ class nnUNetTrainer(object):
         if self._best_ema is None or self.logger.my_fantastic_logging['ema_fg_dice'][-1] > self._best_ema:
             self._best_ema = self.logger.my_fantastic_logging['ema_fg_dice'][-1]
             self.print_to_log_file(f"Yayy! New best EMA pseudo Dice: {np.round(self._best_ema, decimals=4)}")
+            self.print_to_log_file(f"Yayy! New best PQ_DSC: {np.round(self.logger.my_fantastic_logging['PQ_DSC'][-1], decimals=4)}") #!%%6
             self.save_checkpoint(join(self.output_folder, 'checkpoint_best.pth'))
 
         if self.local_rank == 0:
