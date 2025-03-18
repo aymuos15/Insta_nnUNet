@@ -16,6 +16,7 @@ class nnUNetLogger(object):
     """
     def __init__(self, verbose: bool = False):
         self.my_fantastic_logging = {
+            #? Original (Normal logs)
             'mean_fg_dice': list(),
             'ema_fg_dice': list(),
             'dice_per_class_or_region': list(),
@@ -23,7 +24,13 @@ class nnUNetLogger(object):
             'val_losses': list(),
             'lrs': list(),
             'epoch_start_timestamps': list(),
-            'epoch_end_timestamps': list()
+            'epoch_end_timestamps': list(),
+
+            #? Instance logging
+            'insta_TP': list(),
+            'insta_FP': list(),
+            'insta_FN': list(),
+            'PQ_DSC': list()
         }
         self.verbose = verbose
         # shut up, this logging is great
@@ -55,17 +62,22 @@ class nnUNetLogger(object):
         # we infer the epoch form our internal logging
         epoch = min([len(i) for i in self.my_fantastic_logging.values()]) - 1  # lists of epoch 0 have len 1
         sns.set(font_scale=2.5)
-        fig, ax_all = plt.subplots(3, 1, figsize=(30, 54))
+        fig, ax_all = plt.subplots(4, 1, figsize=(30, 54)) #! Changed from 3 to 4
         # regular progress.png as we are used to from previous nnU-Net versions
+
         ax = ax_all[0]
         ax2 = ax.twinx()
         x_values = list(range(epoch + 1))
+
+        #? Original (Normal logs)
         ax.plot(x_values, self.my_fantastic_logging['train_losses'][:epoch + 1], color='b', ls='-', label="loss_tr", linewidth=4)
         ax.plot(x_values, self.my_fantastic_logging['val_losses'][:epoch + 1], color='r', ls='-', label="loss_val", linewidth=4)
-        ax2.plot(x_values, self.my_fantastic_logging['mean_fg_dice'][:epoch + 1], color='g', ls='dotted', label="pseudo dice",
-                 linewidth=3)
-        ax2.plot(x_values, self.my_fantastic_logging['ema_fg_dice'][:epoch + 1], color='g', ls='-', label="pseudo dice (mov. avg.)",
-                 linewidth=4)
+        ax2.plot(x_values, self.my_fantastic_logging['mean_fg_dice'][:epoch + 1], color='g', ls='dotted', label="pseudo dice", linewidth=3)
+        ax2.plot(x_values, self.my_fantastic_logging['ema_fg_dice'][:epoch + 1], color='g', ls='-', label="pseudo dice (mov. avg.)", linewidth=4)
+
+        #? Instance logging
+        ax.plot(x_values, self.my_fantastic_logging['PQ_DSC'][:epoch + 1], color='c', ls='-', label="PQ_DSC", linewidth=4)
+
         ax.set_xlabel("epoch")
         ax.set_ylabel("loss")
         ax2.set_ylabel("pseudo dice")
@@ -89,6 +101,16 @@ class nnUNetLogger(object):
         ax.plot(x_values, self.my_fantastic_logging['lrs'][:epoch + 1], color='b', ls='-', label="learning rate", linewidth=4)
         ax.set_xlabel("epoch")
         ax.set_ylabel("learning rate")
+        ax.legend(loc=(0, 1))
+
+        #? New 4th subplot for TP, FP, FN metrics
+        ax = ax_all[3]
+        ax.plot(x_values, self.my_fantastic_logging['insta_TP'][:epoch + 1], color='c', ls='-', label="TP", linewidth=4)
+        ax.plot(x_values, self.my_fantastic_logging['insta_FP'][:epoch + 1], color='y', ls='-', label="FP", linewidth=4)
+        ax.plot(x_values, self.my_fantastic_logging['insta_FN'][:epoch + 1], color='k', ls='-', label="FN", linewidth=4)
+        ax.set_xlabel("epoch")
+        ax.set_ylabel("count")
+        ax.set_title("Detection Metrics (TP, FP, FN)")
         ax.legend(loc=(0, 1))
 
         plt.tight_layout()

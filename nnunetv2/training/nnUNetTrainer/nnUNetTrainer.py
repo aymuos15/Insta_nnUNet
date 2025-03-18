@@ -148,7 +148,7 @@ class nnUNetTrainer(object):
         self.probabilistic_oversampling = False
         self.num_iterations_per_epoch = 250
         self.num_val_iterations_per_epoch = 50
-        self.num_epochs = 2
+        self.num_epochs = 1
         self.current_epoch = 0
         self.enable_deep_supervision = True
 
@@ -161,7 +161,7 @@ class nnUNetTrainer(object):
         self.network = None  # -> self.build_network_architecture()
         self.optimizer = self.lr_scheduler = None  # -> self.initialize
         # self.grad_scaler = GradScaler("cuda") if self.device.type == 'cuda' else None
-        self.grad_scaler = None
+        self.grad_scaler = None #! My personal cluster issue.
         self.loss = None  # -> self.initialize
 
         ### Simple logging. Don't take that away from me!
