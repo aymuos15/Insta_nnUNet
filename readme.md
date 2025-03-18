@@ -3,12 +3,12 @@
 # 1. Losses
 
 ### A. Add loss code
-* Logic here: `nnUNet/nnunetv2/training/insta_losses`
-* Example file: `nnUNet/nnunetv2/training/insta_losses/compound.py`
+* Logic here: `nnUNet/nnunetv2/training/insta_losses` \
+Example file: `nnUNet/nnunetv2/training/insta_losses/compound.py`
 
 ### B. Implement loss variants
-* call in some file here: `nnUNet/nnunetv2/training/nnUNetTrainer/variants/`
-* Example: `nnUNet/nnunetv2/training/nnUNetTrainer/variants/insta_losses/nnUNetTrainerRegionDice_CELoss.py`
+* call in some file here: `nnUNet/nnunetv2/training/nnUNetTrainer/variants/` \
+Example: `nnUNet/nnunetv2/training/nnUNetTrainer/variants/insta_losses/nnUNetTrainerRegionDice_CELoss.py`
 
 ### Usage
 * Sample command:
@@ -19,7 +19,8 @@
 # 2. Metrics
 
 * A. Create a file to define your metrics here: 
-    * `nnUNet/nnunetv2/evaluation`
+    * `nnUNet/nnunetv2/evaluation` \
+    Example file: `nnUNet/nnunetv2/evaluation/insta_metrics.py`
 
 * B. To integrate them into the logging, add them within: 
     * `nnUNet/nnunetv2/evaluation/evaluate_predictions.py`
@@ -41,15 +42,19 @@
 Currently done a bit weirdly cos the import is from a loss folder. I found it a bit easier to understand by the below:
 
 * I. 
-    * Create a file to define your metrics here: `/home/localssk23/nnUNet/nnunetv2/training/logging`
-    * Example file: `/home/localssk23/nnUNet/nnunetv2/training/logging/insta_logging.py`
+    * Create a file to define your metrics here: `nnUNet/nnunetv2/training/logging`
+    * Example file: `nnUNet/nnunetv2/training/logging/insta_logging.py`
 
 * II. 
     * Make multiple changes in: `nnUNet/nnunetv2/training/nnUNetTrainer/nnUNetTrainer.py` \
-    --> Follow #!%%1, #!%%2 etc. comment style in the file. There are 6 steps.
+    --> Follow (`with ctrl+f`) #!%%1, #!%%2 etc. comment style in the file. There are 6 steps.
 
 
 # 4 Checkpointing
+### A. Switch checkpoint metric
+Check Comment (`with ctrl+f`): #!%%checkpointing \
+Essentially we just switch to the insta metric log value here.
+
 
 ## Extra:
 **<ins>GradScaler**</ins>: `https://github.com/MIC-DKFZ/nnUNet/issues/2742`
