@@ -51,7 +51,9 @@ def panoptic_dice(mask_ref: np.ndarray, mask_pred: np.ndarray):
     rq = tp / (tp + 0.5 * fp + 0.5 * fn)
     sq = sum(score for _, _, score in optimal_matches) / tp
 
-    return rq * sq, tp, fp, fn
+    print(f"rq: {rq}, sq: {sq}, tp: {tp}, fp: {fp}, fn: {fn}")
+
+    return (rq * sq), tp, fp, fn
 
 def create_match_dict(pred_label_cc, gt_label_cc):
     pred_to_gt = {}
