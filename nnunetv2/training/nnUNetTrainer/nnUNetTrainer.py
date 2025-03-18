@@ -1073,7 +1073,8 @@ class nnUNetTrainer(object):
             mask = None
 
         tp, fp, fn, _ = get_tp_fp_fn_tn(predicted_segmentation_onehot, target, axes=axes, mask=mask)
-        pq, insta_tp, insta_fp, insta_fn = panoptic_scores(predicted_segmentation_onehot, target) #!%%1
+        # pq, insta_tp, insta_fp, insta_fn = panoptic_scores(predicted_segmentation_onehot, target) #!%%1
+        pq, insta_tp, insta_fp, insta_fn = 0, 0, 0, 0
 
         tp_hard = tp.detach().cpu().numpy()
         fp_hard = fp.detach().cpu().numpy()
